@@ -7,19 +7,18 @@ from threading import Thread
 
 ctx = zmq.Context()
 
-pub = ctx.socket(zmq.PUB)
-pub.setsockopt(zmq.IPV6, 1)
-pub.connect('tcp://aaaa::600:fbff:a2df:5d20:8888')
+push = ctx.socket(zmq.PUB)
+push.setsockopt(zmq.IPV6, 1)
+push.connect('tcp://aaaa::600:fbff:a2df:5d20:8888')
+time.sleep(1)
 
-time.sleep(2)
-
-sub = ctx.socket(zmq.SUB)
-sub.setsockopt(zmq.IPV6, 1)
-sub.setsockopt(zmq.SUBSCRIBE, '')
-sub.connect('tcp://aaaa::600:fbff:a2df:5d20:9999')
+pull = ctx.socket(zmq.SUB)
+pull.setsockopt(zmq.IPV6, 1)
+pull.setsockopt(zmq.SUBSCRIBE, '')
+pull.connect('tcp://aaaa::600:fbff:a2df:5d20:9999')
 
 poller = zmq.Poller()
-poller.register(sub, zmq.POLLIN)
+poller.register(pull, zmq.POLLIN)
 
 def read_input(queue):
     while(True):
@@ -33,11 +32,15 @@ t.start()
 
 while(True):
     socks = dict(poller.poll(50))
-    if sub in socks and socks[sub] == zmq.POLLIN:
-        print '< ', sub.recv_multipart()
+    if pull in socks and socks[pull] == zmq.POLLIN:
+        data = pull.recv().split('\0')
+        print '< ', data
+        # if (data[0] == 'sensor://nucleo-sensor-demo/button') and (data[1] == 'pressed'):
+        #     push.send('action://nucleo-sensor-demo/led/blue/toggle')
 
     try:
         data = q.get_nowait()
-        pub.send_multipart(data.split(' '))
+        # data = q.get()
+        push.send_multipart(data.split(' '))
     except Empty:
         pass
