@@ -21,7 +21,7 @@ The replacement files are provided in the folder `contiki-modifications` of this
 License and contribution policy
 ===============================
 
-This project is licensed under LGPLv3.
+This project is licensed under MPLv2.
 
 Contiki-zmtp is licensed under MPLv2.
 
